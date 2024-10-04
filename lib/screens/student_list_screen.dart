@@ -1,3 +1,4 @@
+// lib/screens/student_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/student_bloc.dart';
@@ -34,7 +35,8 @@ class StudentListScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final student = state.students[index];
                 return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   child: ListTile(
                     title: Text('${student.firstName} ${student.lastName}'),
                     subtitle: Column(
@@ -82,9 +84,12 @@ class StudentListScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) {
-        return StudentDialog(
-          isUpdate: isUpdate,
-          student: student,
+        return BlocProvider.value(
+          value: BlocProvider.of<StudentBloc>(context),
+          child: StudentDialog(
+            isUpdate: isUpdate,
+            student: student,
+          ),
         );
       },
     );
@@ -96,7 +101,8 @@ class StudentListScreen extends StatelessWidget {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Delete Student'),
-          content: Text('Are you sure you want to delete ${student.firstName} ${student.lastName}?'),
+          content: Text(
+              'Are you sure you want to delete ${student.firstName} ${student.lastName}?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
@@ -104,7 +110,8 @@ class StudentListScreen extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                BlocProvider.of<StudentBloc>(context).add(DeleteStudent(student.id));
+                BlocProvider.of<StudentBloc>(context)
+                    .add(DeleteStudent(student.id));
                 Navigator.pop(dialogContext);
               },
               child: const Text('Delete', style: TextStyle(color: Colors.red)),

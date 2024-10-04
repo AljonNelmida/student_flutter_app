@@ -1,3 +1,4 @@
+// lib/widgets/student_dialog.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/student_bloc.dart';
@@ -135,7 +136,11 @@ class _StudentDialogState extends State<StudentDialog> {
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
+      // Access the StudentBloc
       final studentBloc = BlocProvider.of<StudentBloc>(context);
+      // Alternatively:
+      // final studentBloc = context.read<StudentBloc>();
+
       final firstName = _firstNameController.text.trim();
       final lastName = _lastNameController.text.trim();
       final course = _selectedCourse!;
