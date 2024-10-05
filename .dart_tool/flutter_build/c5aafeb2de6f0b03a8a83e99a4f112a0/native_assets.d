@@ -1,0 +1,1 @@
+ C:\\Users\\Patrick\ Ted\\Downloads\\student_api\\flutter_bloc_api_crud-main\\.dart_tool\\flutter_build\\c5aafeb2de6f0b03a8a83e99a4f112a0\\native_assets.yaml: 

@@ -1,4 +1,3 @@
-// lib/widgets/student_dialog.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/student_bloc.dart';
@@ -19,17 +18,9 @@ class _StudentDialogState extends State<StudentDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
-  String? _selectedCourse;
+  late TextEditingController _courseController;
   late TextEditingController _yearController;
   bool _enrolled = true;
-
-  final List<String> _courses = [
-    'First Year',
-    'Second Year',
-    'Third Year',
-    'Fourth Year',
-    'Fifth Year',
-  ];
 
   @override
   void initState() {
@@ -38,7 +29,8 @@ class _StudentDialogState extends State<StudentDialog> {
         TextEditingController(text: widget.student?.firstName ?? '');
     _lastNameController =
         TextEditingController(text: widget.student?.lastName ?? '');
-    _selectedCourse = widget.student?.course;
+    _courseController =
+        TextEditingController(text: widget.student?.course ?? '');
     _yearController =
         TextEditingController(text: widget.student?.year.toString() ?? '');
     _enrolled = widget.student?.enrolled ?? true;
@@ -48,6 +40,7 @@ class _StudentDialogState extends State<StudentDialog> {
   void dispose() {
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _courseController.dispose();
     _yearController.dispose();
     super.dispose();
   }
@@ -75,47 +68,43 @@ class _StudentDialogState extends State<StudentDialog> {
                 validator: (value) =>
                     value == null || value.isEmpty ? 'Enter last name' : null,
               ),
-              // Course Dropdown
-              DropdownButtonFormField<String>(
-                value: _selectedCourse,
+              // Course
+              TextFormField(
+                controller: _courseController,
                 decoration: const InputDecoration(labelText: 'Course'),
-                items: _courses
-                    .map((course) =>
-                        DropdownMenuItem(value: course, child: Text(course)))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedCourse = value;
-                  });
-                },
                 validator: (value) =>
-                    value == null || value.isEmpty ? 'Select a course' : null,
+                    value == null || value.isEmpty ? 'Enter course' : null,
               ),
               // Year
               TextFormField(
                 controller: _yearController,
-                decoration: const InputDecoration(labelText: 'Year'),
                 keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Year'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Enter year';
                   }
                   final year = int.tryParse(value);
-                  if (year == null || year < 1 || year > 5) {
-                    return 'Enter a valid year (1-5)';
+                  if (year == null || year <= 0) {
+                    return 'Enter a valid year';
                   }
                   return null;
                 },
               ),
-              // Enrolled Switch
-              SwitchListTile(
-                title: const Text('Enrolled'),
-                value: _enrolled,
-                onChanged: (value) {
-                  setState(() {
-                    _enrolled = value;
-                  });
-                },
+              // Enrolled checkbox
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Enrolled'),
+                  Checkbox(
+                    value: _enrolled,
+                    onChanged: (value) {
+                      setState(() {
+                        _enrolled = value ?? true;
+                      });
+                    },
+                  ),
+                ],
               ),
             ],
           ),
@@ -127,41 +116,39 @@ class _StudentDialogState extends State<StudentDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: _submit,
+          onPressed: () async {
+            if (_formKey.currentState!.validate()) {
+              try {
+                final student = Student(
+                  id: widget.student?.id ?? '',
+                  firstName: _firstNameController.text,
+                  lastName: _lastNameController.text,
+                  course: _courseController.text,
+                  year: int.parse(_yearController.text),
+                  enrolled: _enrolled,
+                );
+
+                if (widget.isUpdate) {
+                  context.read<StudentBloc>().add(UpdateStudent(student.id, student));
+                } else {
+                  context.read<StudentBloc>().add(CreateStudent(student));
+                }
+
+                Navigator.pop(context); // Close the dialog on success
+              } catch (e) {
+                // Handle the exception and show a SnackBar
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to create student: ${e.toString()}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          },
           child: Text(widget.isUpdate ? 'Update' : 'Create'),
         ),
       ],
     );
-  }
-
-  void _submit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      // Access the StudentBloc
-      final studentBloc = BlocProvider.of<StudentBloc>(context);
-      // Alternatively:
-      // final studentBloc = context.read<StudentBloc>();
-
-      final firstName = _firstNameController.text.trim();
-      final lastName = _lastNameController.text.trim();
-      final course = _selectedCourse!;
-      final year = int.parse(_yearController.text.trim());
-
-      final student = Student(
-        id: widget.isUpdate ? widget.student!.id : '',
-        firstName: firstName,
-        lastName: lastName,
-        course: course,
-        year: year,
-        enrolled: _enrolled,
-      );
-
-      if (widget.isUpdate) {
-        studentBloc.add(UpdateStudent(student.id, student));
-      } else {
-        studentBloc.add(CreateStudent(student));
-      }
-
-      Navigator.pop(context);
-    }
   }
 }

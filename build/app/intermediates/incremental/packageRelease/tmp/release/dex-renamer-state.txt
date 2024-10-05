@@ -1,0 +1,4 @@
+#Sat Oct 05 07:31:49 PST 2024
+base.0=C\:\\Users\\Patrick Ted\\Downloads\\student_api\\flutter_bloc_api_crud-main\\build\\app\\intermediates\\dex\\release\\minifyReleaseWithR8\\classes.dex
+path.0=classes.dex
+renamed.0=classes.dex
